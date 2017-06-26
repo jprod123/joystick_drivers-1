@@ -1584,7 +1584,6 @@ int main(int argc, char *argv[])
   g_wiimote_node = new WiimoteNode();
 
   // Do we have a bluetooth address passed in?
-  // Try not to consume a ROS arg/param
   if (argc > 1)
   {
    ROS:INFO("Using Bluetooth address specified from CLI"); 
