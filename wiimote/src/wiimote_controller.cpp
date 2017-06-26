@@ -1602,10 +1602,11 @@ int main(int argc, char *argv[])
   int pair_timeout;
   ros::param::param<int>("~pair_timeout", pair_timeout, 5);
 
-  if (fed_addr) ROS_INFO("* * * Pairing with %s", g_wiimote_node->getBluetoothAddr());
-
-  else ROS_INFO("Searching for Wiimotes");
-
+  if (fed_addr){
+    ROS_INFO("* * * Pairing with %s", g_wiimote_node->getBluetoothAddr());
+  } else { ROS_INFO("Searching for Wiimotes");
+  }
+ 
   ROS_INFO("Allow all joy sticks to remain at center position until calibrated.");
 
   if (g_wiimote_node->pairWiimote(0, pair_timeout))
