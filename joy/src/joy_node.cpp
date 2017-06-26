@@ -44,7 +44,8 @@ class Joystick
 {
 private:
   ros::NodeHandle nh_;
-  bool open_;               
+  bool open_;
+  bool sticky_buttons = false;               
   std::string joy_dev_;
   double deadzone_;
   double autorepeat_rate_;  // in Hz.  0 for no repeat.
