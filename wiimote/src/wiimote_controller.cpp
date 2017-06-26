@@ -1579,20 +1579,19 @@ void mySigHandler(int sig)
 
 int main(int argc, char *argv[])
 {
+  bool fed_addr = false;
+  std::string bluetooth_addr;  
   ros::init(argc, argv, "wiimote_controller");
 
   g_wiimote_node = new WiimoteNode();
-
   // Do we have a bluetooth address passed in?
   if (argc > 1)
   {
-   ROS:INFO("Using Bluetooth address specified from CLI"); 
+   ROS_INFO("Using Bluetooth address specified from CLI"); 
    g_wiimote_node->setBluetoothAddr(argv[1]);
    fed_addr = true;  
   }
 
-  std::string bluetooth_addr;
-  bool fed_addr = false;
   if (ros::param::get("~bluetooth_addr", bluetooth_addr))
   {
     g_wiimote_node->setBluetoothAddr(bluetooth_addr.c_str());
