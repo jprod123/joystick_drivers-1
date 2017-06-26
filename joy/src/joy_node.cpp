@@ -47,9 +47,8 @@ private:
   bool open_;               
   std::string joy_dev_;
   double deadzone_;
-  double autorepeat_rate_;   // in Hz.  0 for no repeat.
+  double autorepeat_rate_;  // in Hz.  0 for no repeat.
   double coalesce_interval_; // Defaults to 100 Hz rate limit.
-  bool sticky_buttons_;		 // Sticky buttons option
   int event_count_;
   int pub_count_;
   ros::Publisher pub_;
@@ -190,7 +189,7 @@ public:
       tv.tv_sec = 1;
       tv.tv_usec = 0;
       sensor_msgs::Joy joy_msg; // Here because we want to reset it on device close.
-      double val = 0.0f;
+      double val = 0.0f; //Temporary variable to hold event values
       sensor_msgs::Joy last_published_joy_msg; // used for sticky buttons option
       sensor_msgs::Joy sticky_buttons_joy_msg; // used for sticky buttons option
       while (nh_.ok()) 
@@ -211,7 +210,7 @@ public:
           tv.tv_usec = 0;
           //ROS_INFO("Select returned negative. %i", ros::isShuttingDown());
           continue;
-          //				break; // Joystick is probably closed. Not sure if this case is useful.
+          //break; // Joystick is probably closed. Not sure if this case is useful.
         }
         
         if (FD_ISSET(joy_fd, &set))
@@ -263,13 +262,14 @@ public:
             }
             
             // Allows deadzone to be "smooth"
-            if (val > unscaled_deadzone)
-                val -= unscaled_deadzone;
-            else if (val < -unscaled_deadzone)
-                val += unscaled_deadzone;
-            else
-                val = 0;
-            joy_msg.axes[event.number] = val * scale;
+            // Scales the origin of the axes to be at the deadzone
+	    if (val > unscaled_deadzone)
+	      val -= unscaled_deadzone;
+	    else if (val < -unscaled_deadzone)
+	      val += unscaled_deadzone;
+	    else
+	      val = 0;
+	    joy_msg.axes[event.number] = val * scale;
             // Will wait a bit before sending to try to combine events.
             publish_soon = true;
             break;
@@ -282,41 +282,40 @@ public:
           publish_now = true;
         
         if (publish_now) {
-                        // Assume that all the JS_EVENT_INIT messages have arrived already.
-                        // This should be the case as the kernel sends them along as soon as
-                        // the device opens.
-                        //ROS_INFO("Publish...");
-                        if (sticky_buttons_ == true) {
-                                // cycle through buttons
-                                for (int i = 0; i < joy_msg.buttons.size(); i++) {
-                                        // change button state only on transition from 0 to 1
-                                        if (joy_msg.buttons[i] == 1 && last_published_joy_msg.buttons[i] == 0) {
-                                                sticky_buttons_joy_msg.buttons[i] = sticky_buttons_joy_msg.buttons[i] ? 0 : 1;
-                                        } else {
-                                                // do not change the message sate
-                                                //sticky_buttons_joy_msg.buttons[i] = sticky_buttons_joy_msg.buttons[i] ? 0 : 1;
-                                        }
-                                }
-                                // update last published message
-                                last_published_joy_msg = joy_msg;
-                                // fill rest of sticky_buttons_joy_msg (time stamps, axes, etc)
-                                sticky_buttons_joy_msg.header.stamp.nsec = joy_msg.header.stamp.nsec;
-                                sticky_buttons_joy_msg.header.stamp.sec  = joy_msg.header.stamp.sec;
-                                sticky_buttons_joy_msg.header.frame_id   = joy_msg.header.frame_id;
-                                for(int i=0; i < joy_msg.axes.size(); i++){
-                                        sticky_buttons_joy_msg.axes[i] = joy_msg.axes[i];
-                                }
-                                pub_.publish(sticky_buttons_joy_msg);
-                        } else {
-                                pub_.publish(joy_msg);
-                        }
+	  // Assume that all the JS_EVENT_INIT messages have arrived already.
+	  // This should be the case as the kernel sends them along as soon as
+	  // the device opens.
+	  if (sticky_buttons_ == true) {
+	    // cycle through buttons
+	    for (int i = 0; i < joy_msg.buttons.size(); i++) {
+	      // change button state only on transition from 0 to 1
+	      if (joy_msg.buttons[i] == 1 && last_published_joy_msg.buttons[i] == 0) {
+		sticky_buttons_joy_msg.buttons[i] = sticky_buttons_joy_msg.buttons[i] ? 0 : 1;
+	      } else {
+		// do not change the message sate
+		//sticky_buttons_joy_msg.buttons[i] = sticky_buttons_joy_msg.buttons[i] ? 0 : 1;
+	      }
+	    }
+	    // update last published message
+	    last_published_joy_msg = joy_msg;
+	    // fill rest of sticky_buttons_joy_msg (time stamps, axes, etc)
+	    sticky_buttons_joy_msg.header.stamp.nsec = joy_msg.header.stamp.nsec;
+	    sticky_buttons_joy_msg.header.stamp.sec  = joy_msg.header.stamp.sec;
+	    sticky_buttons_joy_msg.header.frame_id   = joy_msg.header.frame_id;
+	    for(int i=0; i < joy_msg.axes.size(); i++){
+	      sticky_buttons_joy_msg.axes[i] = joy_msg.axes[i];
+	    }
+	    pub_.publish(sticky_buttons_joy_msg);
+	  } else {
+	    pub_.publish(joy_msg);
+	  }
 
-                        publish_now = false;
-                        tv_set = false;
-                        publication_pending = false;
-                        publish_soon = false;
-                        pub_count_++;
-                }
+	  publish_now = false;
+	  tv_set = false;
+	  publication_pending = false;
+	  publish_soon = false;
+	  pub_count_++;
+	}
         
         // If an axis event occurred, start a timer to combine with other
         // events.
