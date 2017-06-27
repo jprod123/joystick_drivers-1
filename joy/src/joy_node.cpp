@@ -51,7 +51,6 @@ private:
   double deadzone_;
   double autorepeat_rate_;  // in Hz.  0 for no repeat.
   double coalesce_interval_; // Defaults to 100 Hz rate limit.
-
   int event_count_;
   int pub_count_;
   ros::Publisher pub_;
