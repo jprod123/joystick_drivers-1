@@ -44,13 +44,14 @@ class Joystick
 {
 private:
   ros::NodeHandle nh_;
+  bool open_;
+  bool sticky_buttons_;
   bool default_trig_val_;
-  bool open_;               
   std::string joy_dev_;
   double deadzone_;
   double autorepeat_rate_;  // in Hz.  0 for no repeat.
   double coalesce_interval_; // Defaults to 100 Hz rate limit.
-  bool sticky_buttons_;		 // Sticky buttons option
+
   int event_count_;
   int pub_count_;
   ros::Publisher pub_;
@@ -193,7 +194,7 @@ public:
       tv.tv_sec = 1;
       tv.tv_usec = 0;
       sensor_msgs::Joy joy_msg; // Here because we want to reset it on device close.
-      double val;
+      double val; //Temporary variable to hold event values
       sensor_msgs::Joy last_published_joy_msg; // used for sticky buttons option
       sensor_msgs::Joy sticky_buttons_joy_msg; // used for sticky buttons option
       while (nh_.ok()) 
