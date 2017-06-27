@@ -214,7 +214,7 @@ public:
           tv.tv_usec = 0;
           //ROS_INFO("Select returned negative. %i", ros::isShuttingDown());
           continue;
-          //				break; // Joystick is probably closed. Not sure if this case is useful.
+          //break; // Joystick is probably closed. Not sure if this case is useful.
         }
         
         if (FD_ISSET(joy_fd, &set))
