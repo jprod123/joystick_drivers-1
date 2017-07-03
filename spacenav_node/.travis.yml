@@ -1,0 +1,18 @@
+language: cpp
+compiler:
+- clang
+- gcc
+after_success:
+- openssl aes-256-cbc -K $encrypted_c1093813b609_key -iv $encrypted_c1093813b609_iv
+  -in .snapcraft/travis_snapcraft.cfg -out .snapcraft/snapcraft.cfg -d
+sudo: required
+services:
+- docker
+deploy:
+  'on':
+    branch: master
+  provider: script
+  script: docker run -v $(pwd):$(pwd) -t ubuntu:xenial sh -c "apt update -qq && apt
+    install snapcraft -y && cd $(pwd) && snapcraft && snapcraft push *.snap --release
+    edge"
+  skip_cleanup: true
